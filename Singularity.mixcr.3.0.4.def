@@ -1,0 +1,54 @@
+#!/bin/bash
+Bootstrap: docker
+From: phusion/baseimage:0.10.2
+
+
+%label
+
+	MAINTAINER Hugo Mananet
+
+
+%environment
+
+	JAVA_LIBRARY_PATH=/usr/lib/jni
+	JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+	export JAVA_LIBRARY_PATH JAVA_HOME
+	
+
+
+%post
+
+	mkdir /soft
+	mkdir /work
+	mkdir /user1
+	mkdir /user2
+	mkdir /tmp3
+
+    apt-get update && \
+	apt-get upgrade -y && \
+	apt-get install -y build-essential \
+	wget \
+	openjdk-8-jdk \
+	software-properties-common \
+	unzip \
+	git
+
+
+	wget -P /opt/ https://apache.mediamirrors.org/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz
+
+	cd /opt/ && tar xvzf apache-maven-3.6.0-bin.tar.gz
+	export PATH=/opt/apache-maven-3.6.0/bin:$PATH
+
+
+   	cd /opt/ && git clone https://github.com/milaboratory/mixcr.git
+	cd /opt/mixcr/ && git submodule update --init --recursive
+
+	cd /opt/mixcr/ && ./build.sh
+	ln -s /opt/mixcr/mixcr /usr/local/bin/
+
+
+
+
+%runscript
+
+	exec mixcr "$@"
